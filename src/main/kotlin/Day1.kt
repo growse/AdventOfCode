@@ -10,7 +10,6 @@ fun main() {
 typealias FuelFromMassCalculator = (Int) -> Int
 
 class Day1 {
-
     fun sumFuelRequiredForMasses(): Int {
         return sumFuelRequiredForMassSomehow(this::calculateFuelRequired)
     }
