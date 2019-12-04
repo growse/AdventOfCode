@@ -1,14 +1,16 @@
 package com.growse.adventofcode
 
 import kotlin.math.floor
-import kotlin.reflect.KFunction1
 
 fun main() {
     println(Day1().sumFuelRequiredForMasses())
     println(Day1().sumFuelRequiredForMassesAddingFuelForTheFuelToo())
 }
 
+typealias FuelFromMassCalculator = (Int) -> Int
+
 class Day1 {
+
     fun sumFuelRequiredForMasses(): Int {
         return sumFuelRequiredForMassSomehow(this::calculateFuelRequired)
     }
@@ -17,7 +19,7 @@ class Day1 {
         return sumFuelRequiredForMassSomehow(this::calculateFuelRequiredConsideringFuelAsWell)
     }
 
-    private fun sumFuelRequiredForMassSomehow(massToFuelCalculator: KFunction1<@ParameterName(name = "inputMass") Int, Int>): Int {
+    private fun sumFuelRequiredForMassSomehow(massToFuelCalculator: FuelFromMassCalculator): Int {
         return this::class
             .java
             .getResourceAsStream("/day1.input.txt")
