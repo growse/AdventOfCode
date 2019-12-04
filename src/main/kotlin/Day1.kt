@@ -1,6 +1,7 @@
 package com.growse.adventofcode
 
 import kotlin.math.floor
+import kotlin.reflect.KFunction1
 
 fun main() {
     println(Day1().sumFuelRequiredForMasses())
@@ -9,25 +10,21 @@ fun main() {
 
 class Day1 {
     fun sumFuelRequiredForMasses(): Int {
-        return this::class
-            .java
-            .getResourceAsStream("/day1.input.txt")
-            .bufferedReader()
-            .lines()
-            .map { line -> line.toInt() }
-            .map { mass -> calculateFuelRequired(mass) }
-            .reduce { current, value -> current + value }
-            .orElseThrow()
+        return sumFuelRequiredForMassSomehow(this::calculateFuelRequired)
     }
 
     fun sumFuelRequiredForMassesAddingFuelForTheFuelToo(): Int {
+        return sumFuelRequiredForMassSomehow(this::calculateFuelRequiredConsideringFuelAsWell)
+    }
+
+    private fun sumFuelRequiredForMassSomehow(massToFuelCalculator: KFunction1<@ParameterName(name = "inputMass") Int, Int>): Int {
         return this::class
             .java
             .getResourceAsStream("/day1.input.txt")
             .bufferedReader()
             .lines()
             .map { line -> line.toInt() }
-            .map { mass -> calculateFuelRequiredConsideringFuelAsWell(mass) }
+            .map { mass -> massToFuelCalculator(mass) }
             .reduce { current, value -> current + value }
             .orElseThrow()
     }
@@ -37,12 +34,14 @@ class Day1 {
     }
 
     fun calculateFuelRequiredConsideringFuelAsWell(inputMass: Int): Int {
-        var totalFuel = 0
-        var lastMass = inputMass
-        while (lastMass > 0) {
-            lastMass = calculateFuelRequired(lastMass)
-            totalFuel += lastMass
+        return if (calculateFuelRequired(inputMass) == 0) {
+            0
+        } else {
+            calculateFuelRequired(inputMass) + calculateFuelRequiredConsideringFuelAsWell(
+                calculateFuelRequired(
+                    inputMass
+                )
+            )
         }
-        return totalFuel
     }
 }
