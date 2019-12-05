@@ -1,6 +1,8 @@
 package com.growse.adventofcode
 
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -23,5 +25,10 @@ class TestDay2 {
             expectedOutputProgram,
             intCodeComputerOutput.joinToString(",")
         )
+    }
+
+    @Test
+    fun testInputFinderWorks() {
+        assertEquals(Pair(12, 2), Day2().findInputsThatProduce(3895705))
     }
 }

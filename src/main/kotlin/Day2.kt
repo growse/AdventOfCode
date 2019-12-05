@@ -2,6 +2,8 @@ package com.growse.adventofcode
 
 fun main() {
     println(Day2().runProgramFromResource())
+    val day2combo = Day2().findInputsThatProduce(19690720)
+    println(day2combo.second + (day2combo.first * 100))
 }
 
 typealias Op = (Int, Int) -> Int
@@ -31,14 +33,35 @@ class Day2 {
         return memory
     }
 
-    fun runProgramFromResource(): String {
-        return this.executeProgram(this::class
+    private fun getInputProgram(): List<Int> {
+        return this::class
             .java
             .getResourceAsStream("/day2.input.txt")
-            .bufferedReader().use { it.readText() }
+            .bufferedReader()
+            .use { it.readText() }
             .split(",")
             .map { it.trim().toInt() }
-        )
+    }
+
+    fun runProgramFromResource(): String {
+        return this.executeProgram(getInputProgram())
             .joinToString(",")
+    }
+
+    fun findInputsThatProduce(expected: Int): Pair<Int, Int> {
+        val inputProgram = getInputProgram()
+        val range = IntRange(0, 99)
+        return sequence {
+            range.forEach { a ->
+                range.forEach { b ->
+                    yield(a to b)
+                }
+            }
+        }.map {
+            val prog = inputProgram.toMutableList()
+            prog.set(1, it.first)
+            prog.set(2, it.second)
+            it to executeProgram(prog)[0]
+        }.filter { it.second == expected }.first().first
     }
 }
