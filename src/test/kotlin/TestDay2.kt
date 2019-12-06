@@ -7,7 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
 class TestDay2 {
-    @ParameterizedTest(name = "For mass {0}, fuel is {1}")
+    @ParameterizedTest()
     @CsvSource(
         "1,0,0,0,99;2,0,0,0,99",
         "2,3,0,3,99;2,3,0,6,99",
