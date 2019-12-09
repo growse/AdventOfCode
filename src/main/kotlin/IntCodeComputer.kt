@@ -1,14 +1,14 @@
 package com.growse.adventofcode
 
 fun main() {
-    println(Day2().runProgramFromResource())
-    val day2combo = Day2().findInputsThatProduce(19690720)
+    println(IntCodeComputer().runProgramFromResource())
+    val day2combo = IntCodeComputer().findInputsThatProduce(19690720)
     println(day2combo.second + (day2combo.first * 100))
 }
 
 typealias Op = (Int, Int) -> Int
 
-class Day2 {
+class IntCodeComputer {
     private val ops = mapOf<Int, Op>(
         Pair(1, { a: Int, b: Int -> a + b }),
         Pair(2, { a: Int, b: Int -> a * b })

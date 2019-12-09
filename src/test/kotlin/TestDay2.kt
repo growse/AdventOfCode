@@ -17,7 +17,7 @@ class TestDay2 {
     )
     fun testIntCodeComputerWorks(inputProgram: String, expectedOutputProgram: String) {
 
-        val intCodeComputerOutput = Day2()
+        val intCodeComputerOutput = IntCodeComputer()
             .executeProgram(
                 inputProgram.split(",").map { a -> a.toInt() }
             )
@@ -29,6 +29,6 @@ class TestDay2 {
 
     @Test
     fun testInputFinderWorks() {
-        assertEquals(Pair(12, 2), Day2().findInputsThatProduce(3895705))
+        assertEquals(Pair(12, 2), IntCodeComputer().findInputsThatProduce(3895705))
     }
 }
