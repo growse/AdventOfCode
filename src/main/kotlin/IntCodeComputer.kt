@@ -43,6 +43,24 @@ class IntCodeComputer {
             val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
             println(memory[paramAddresses[0]])
             return 2
+        }),
+        Pair(5, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
+            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
+            return if (memory[paramAddresses[0]] != 0) memory[paramAddresses[1]] - address else 3
+        }),
+        Pair(6, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
+            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
+            return if (memory[paramAddresses[0]] == 0) memory[paramAddresses[1]] - address else 3
+        }),
+        Pair(7, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
+            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
+            memory[paramAddresses[2]] = if (memory[paramAddresses[0]] < memory[paramAddresses[1]]) 1 else 0
+            return 4
+        }),
+        Pair(8, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
+            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
+            memory[paramAddresses[2]] = if (memory[paramAddresses[0]] == memory[paramAddresses[1]]) 1 else 0
+            return 4
         })
     )
 
@@ -62,10 +80,11 @@ class IntCodeComputer {
                 .toByte()
 
             val modeMask = BitSet.valueOf(byteArray)
-            address += ops[opcode]!!.invoke(memory, address, modeMask)
+            address += (ops[opcode] ?: error("Opcode $opcode not supported")).invoke(memory, address, modeMask)
         }
         return memory
     }
+
     fun getInputProgram(resourceName: String): List<Int> {
         return this::class
             .java
@@ -76,7 +95,7 @@ class IntCodeComputer {
             .map { it.trim().toInt() }
     }
 
-    fun executeNamedResourceProgram(resourceName:String):List<Int> {
+    fun executeNamedResourceProgram(resourceName: String): List<Int> {
         return executeProgram(getInputProgram(resourceName))
     }
 }
