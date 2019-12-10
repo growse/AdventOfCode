@@ -8,4 +8,5 @@ class Day5 {
     fun executeProgram(): List<Int> {
         return IntCodeComputer().executeNamedResourceProgram("/day5.input.txt")
     }
+
 }
