@@ -1,17 +1,49 @@
 package com.growse.adventofcode
 
-fun main() {
-    println(IntCodeComputer().runProgramFromResource())
-    val day2combo = IntCodeComputer().findInputsThatProduce(19690720)
-    println(day2combo.second + (day2combo.first * 100))
-}
-
-typealias Op = (Int, Int) -> Int
+import java.util.*
 
 class IntCodeComputer {
-    private val ops = mapOf<Int, Op>(
-        Pair(1, { a: Int, b: Int -> a + b }),
-        Pair(2, { a: Int, b: Int -> a * b })
+
+    private fun paramAddressesWithBitMask(memory: List<Int>, address: Int, modeMask: BitSet): List<Int> {
+        return when (memory.size - 1 - address) {
+            0 -> error("At memory's end")
+            1 -> listOf(
+                if (modeMask[0]) address + 1 else memory[address + 1]
+            )
+            2 -> listOf(
+                if (modeMask[0]) address + 1 else memory[address + 1],
+                if (modeMask[1]) address + 2 else memory[address + 2]
+            )
+            else -> listOf(
+                if (modeMask[0]) address + 1 else memory[address + 1],
+                if (modeMask[1]) address + 2 else memory[address + 2],
+                if (modeMask[2]) address + 3 else memory[address + 3]
+            )
+        }
+
+    }
+
+    private val ops = mapOf(
+        Pair(1, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
+            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
+            memory[paramAddresses[2]] = memory[paramAddresses[0]] + memory[paramAddresses[1]]
+            return 4
+        }),
+        Pair(2, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
+            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
+            memory[paramAddresses[2]] = memory[paramAddresses[0]] * memory[paramAddresses[1]]
+            return 4
+        }),
+        Pair(3, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
+            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
+            memory[paramAddresses[0]] = readLine()!!.toInt()
+            return 2
+        }),
+        Pair(4, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
+            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
+            println(memory[paramAddresses[0]])
+            return 2
+        })
     )
 
     fun executeProgram(inputProgram: List<Int>): List<Int> {
@@ -22,46 +54,29 @@ class IntCodeComputer {
             if (memory[address] == haltOp) {
                 break
             }
-            memory[memory[address + 3]] =
-                (ops[memory[address]] ?: error("Invalid opcode"))
-                    .invoke(
-                        memory[memory[address + 1]],
-                        memory[memory[address + 2]]
-                    )
-            address += 4
+            val opcode = memory[address] % 100
+            val byteArray = ByteArray(1)
+            byteArray[0] = (memory[address] / 100)
+                .toString()
+                .toInt(2)
+                .toByte()
+
+            val modeMask = BitSet.valueOf(byteArray)
+            address += ops[opcode]!!.invoke(memory, address, modeMask)
         }
         return memory
     }
-
-    private fun getInputProgram(): List<Int> {
+    fun getInputProgram(resourceName: String): List<Int> {
         return this::class
             .java
-            .getResourceAsStream("/day2.input.txt")
+            .getResourceAsStream(resourceName)
             .bufferedReader()
             .use { it.readText() }
             .split(",")
             .map { it.trim().toInt() }
     }
 
-    fun runProgramFromResource(): String {
-        return this.executeProgram(getInputProgram())
-            .joinToString(",")
-    }
-
-    fun findInputsThatProduce(expected: Int): Pair<Int, Int> {
-        val inputProgram = getInputProgram()
-        val range = IntRange(0, 99)
-        return sequence {
-            range.forEach { a ->
-                range.forEach { b ->
-                    yield(a to b)
-                }
-            }
-        }.map {
-            val prog = inputProgram.toMutableList()
-            prog.set(1, it.first)
-            prog.set(2, it.second)
-            it to executeProgram(prog)[0]
-        }.filter { it.second == expected }.first().first
+    fun executeNamedResourceProgram(resourceName:String):List<Int> {
+        return executeProgram(getInputProgram(resourceName))
     }
 }

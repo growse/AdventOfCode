@@ -29,6 +29,6 @@ class TestDay2 {
 
     @Test
     fun testInputFinderWorks() {
-        assertEquals(Pair(12, 2), IntCodeComputer().findInputsThatProduce(3895705))
+        assertEquals(Pair(12, 2), Day2().findInputsThatProduce(3895705))
     }
 }

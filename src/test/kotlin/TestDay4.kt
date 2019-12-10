@@ -26,7 +26,7 @@ class TestDay4 {
 
     @ParameterizedTest
     @ValueSource(ints = [111231, 345552, 222228889, 111, 2, 1110111])
-    fun inputHasNoPairsfAdjacantDigits(input: Int) {
+    fun inputHasNoPairsOfAdjacentDigits(input: Int) {
         assertFalse(Day4().numberHasAtLeastOnePairOfAdjacentDigits(input))
     }
 }
