@@ -18,6 +18,18 @@ fun main() {
             .values
             .reduce { acc, i -> i * acc }
     )
+
+    Day8()
+        .decodeImage(Day8().getInputImage("/day8.input.txt"), 25, 6)
+        .flatten()
+        .forEachIndexed { index, i ->
+            run {
+                print(if (i == 1) i else " ")
+                if ((index + 1) % 25 == 0) {
+                    println()
+                }
+            }
+        }
 }
 
 class Day8 {
@@ -44,7 +56,18 @@ class Day8 {
 
     }
 
-    data class Image(val layers: List<Layer>)
+    data class Image(val layers: List<Layer>) {
+        fun flatten(): List<Int> =
+            layers
+                .first()
+                .imageData
+                .mapIndexed { idx, _ -> resolveTransparent(layers.map { it.imageData[idx] }) }
+
+
+        private fun resolveTransparent(pixels: List<Int>): Int =
+            pixels.first { it != 2 }
+
+    }
 }
 
 

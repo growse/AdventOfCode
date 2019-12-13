@@ -22,4 +22,13 @@ class TestDay8 {
         assertTrue(image.layers.all { it.height == height })
         assertEquals(listOf(1, 2, 3), image.layers.first().rows().first())
     }
+
+    @Test
+    fun flattenImage() {
+        val inputImageData = "0222112222120000"
+        val image = Day8().decodeImage(inputImageData.toCharArray().map { it.toString().toInt() }, 2, 2)
+        assertEquals(4, image.layers.size)
+        val flattened = image.flatten()
+        assertEquals(listOf(0,1,1,0),flattened)
+    }
 }
