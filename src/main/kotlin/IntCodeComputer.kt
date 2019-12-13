@@ -1,9 +1,17 @@
 package com.growse.adventofcode
 
 import java.util.*
+import java.util.concurrent.ArrayBlockingQueue
 
-class IntCodeComputer {
+class WaitForInputInterrupt : Throwable()
+class IntCodeComputer(inputs: List<Int>) {
+    private var inputQueue: Queue<Int> = ArrayBlockingQueue(10)
 
+    init {
+        inputQueue.addAll(inputs)
+    }
+
+    private val outputs = mutableListOf<Int>()
     private fun paramAddressesWithBitMask(memory: List<Int>, address: Int, modeMask: BitSet): List<Int> {
         return when (memory.size - 1 - address) {
             0 -> error("At memory's end")
@@ -20,9 +28,9 @@ class IntCodeComputer {
                 if (modeMask[2]) address + 3 else memory[address + 3]
             )
         }
-
     }
 
+    private val haltOp = 99
     private val ops = mapOf(
         Pair(1, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
             val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
@@ -36,12 +44,12 @@ class IntCodeComputer {
         }),
         Pair(3, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
             val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
-            memory[paramAddresses[0]] = readLine()!!.toInt()
+            memory[paramAddresses[0]] = inputQueue.remove()
             return 2
         }),
         Pair(4, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
             val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
-            println(memory[paramAddresses[0]])
+            outputs.add(memory[paramAddresses[0]])
             return 2
         }),
         Pair(5, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
@@ -63,11 +71,19 @@ class IntCodeComputer {
             return 4
         })
     )
-
+    private var address = 0
+    private lateinit var memory: MutableList<Int>
     fun executeProgram(inputProgram: List<Int>): List<Int> {
-        val memory = inputProgram.toMutableList()
-        val haltOp = 99
-        var address = 0
+        load(inputProgram)
+        return resume()
+    }
+
+    fun load(inputProgram: List<Int>) {
+        memory = inputProgram.toMutableList()
+        address = 0
+    }
+
+    fun resume(): MutableList<Int> {
         while (true) {
             if (memory[address] == haltOp) {
                 break
@@ -80,7 +96,11 @@ class IntCodeComputer {
                 .toByte()
 
             val modeMask = BitSet.valueOf(byteArray)
-            address += (ops[opcode] ?: error("Opcode $opcode not supported")).invoke(memory, address, modeMask)
+            try {
+                address += (ops[opcode] ?: error("Opcode $opcode not supported")).invoke(memory, address, modeMask)
+            } catch (e: NoSuchElementException) {
+                throw WaitForInputInterrupt()
+            }
         }
         return memory
     }
@@ -98,4 +118,11 @@ class IntCodeComputer {
     fun executeNamedResourceProgram(resourceName: String): List<Int> {
         return executeProgram(getInputProgram(resourceName))
     }
+
+    fun outputs(): List<Int> = outputs
+    fun addInput(i: Int) {
+        inputQueue.add(i)
+    }
 }
+
+
