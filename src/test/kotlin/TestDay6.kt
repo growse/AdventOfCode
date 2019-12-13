@@ -1,4 +1,4 @@
-import com.growse.adventofcode.com.growse.adventofcode.Day6
+import com.growse.adventofcode.Day6
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest

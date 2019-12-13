@@ -1,4 +1,4 @@
-package com.growse.adventofcode.com.growse.adventofcode
+package com.growse.adventofcode
 
 fun main() {
     println(Day6().calculateOrbitChecksumForResource("/day6.input.txt"))

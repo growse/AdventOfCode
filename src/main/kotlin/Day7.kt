@@ -1,7 +1,4 @@
-package com.growse.adventofcode.com.growse.adventofcode
-
-import com.growse.adventofcode.IntCodeComputer
-import com.growse.adventofcode.WaitForInputInterrupt
+package com.growse.adventofcode
 
 fun main() {
     println(Day7().findMaxThrust(IntCodeComputer(emptyList()).getInputProgram("/day7.input.txt")))
