@@ -4,18 +4,18 @@ import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 
 class WaitForInputInterrupt : Throwable()
-class IntCodeComputer(inputs: List<Int> = emptyList()) {
-    private var relativeMemoryBase: Int = 0
-    private var inputQueue: Queue<Int> = ArrayBlockingQueue(10)
-    private val outputs = mutableListOf<Int>()
-    private var address = 0
-    private val memory: MutableMap<Int, Int> = mutableMapOf()
+class IntCodeComputer(inputs: List<Number> = emptyList()) {
+    private var relativeMemoryBase: Long = 0
+    private var inputQueue: Queue<Number> = ArrayBlockingQueue(10)
+    private val outputs = mutableListOf<Long>()
+    private var address = 0L
+    private val memory: MutableMap<Long, Long> = mutableMapOf()
 
     init {
-        inputQueue.addAll(inputs)
+        inputQueue.addAll(inputs.map { it.toLong() })
     }
 
-    private val haltOp = 99
+    private val haltOp = 99L
     private val ops = mapOf(
         Pair(1, fun(inputs: OpCodeParams): AddressAndRelativeBase {
             inputs.memory[inputs.paramAddresses[2]] =
@@ -34,7 +34,7 @@ class IntCodeComputer(inputs: List<Int> = emptyList()) {
             )
         }),
         Pair(3, fun(inputs: OpCodeParams): AddressAndRelativeBase {
-            inputs.memory[inputs.paramAddresses[0]] = inputQueue.remove()
+            inputs.memory[inputs.paramAddresses[0]] = inputQueue.remove().toLong()
             return AddressAndRelativeBase(
                 inputs.addressAndRelativeBase.address + 2,
                 inputs.addressAndRelativeBase.relativeMemoryBase
@@ -50,7 +50,7 @@ class IntCodeComputer(inputs: List<Int> = emptyList()) {
         Pair(5, fun(inputs: OpCodeParams): AddressAndRelativeBase {
             return AddressAndRelativeBase(
                 if (
-                    inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 } != 0
+                    inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 } != 0L
                 )
                     inputs.memory.computeIfAbsent(inputs.paramAddresses[1]) { 0 }
                 else
@@ -61,7 +61,7 @@ class IntCodeComputer(inputs: List<Int> = emptyList()) {
         Pair(6, fun(inputs: OpCodeParams): AddressAndRelativeBase {
             return AddressAndRelativeBase(
                 if (
-                    inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 } == 0
+                    inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 } == 0L
                 )
                     inputs.memory.computeIfAbsent(inputs.paramAddresses[1]) { 0 }
                 else
@@ -73,7 +73,7 @@ class IntCodeComputer(inputs: List<Int> = emptyList()) {
             inputs.memory[inputs.paramAddresses[2]] =
                 if (
                     inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 } < inputs.memory.computeIfAbsent(inputs.paramAddresses[1]) { 0 }
-                ) 1 else 0
+                ) 1L else 0L
             return AddressAndRelativeBase(
                 inputs.addressAndRelativeBase.address + 4,
                 inputs.addressAndRelativeBase.relativeMemoryBase
@@ -84,7 +84,7 @@ class IntCodeComputer(inputs: List<Int> = emptyList()) {
                 if (
                     inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 } ==
                     inputs.memory.computeIfAbsent(inputs.paramAddresses[1]) { 0 }
-                ) 1 else 0
+                ) 1L else 0L
             return AddressAndRelativeBase(
                 inputs.addressAndRelativeBase.address + 4,
                 inputs.addressAndRelativeBase.relativeMemoryBase
@@ -93,17 +93,17 @@ class IntCodeComputer(inputs: List<Int> = emptyList()) {
         Pair(9, fun(inputs: OpCodeParams): AddressAndRelativeBase {
             return AddressAndRelativeBase(
                 inputs.addressAndRelativeBase.address + 2,
-                inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 }
+                inputs.addressAndRelativeBase.relativeMemoryBase + inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 }
             )
         })
     )
 
     private fun paramAddressesFromMask(
-        memory: MutableMap<Int, Int>,
-        address: Int,
+        memory: MutableMap<Long, Long>,
+        address: Long,
         modeMask: List<Int>,
-        relativeMemoryBase: Int
-    ): List<Int> =
+        relativeMemoryBase: Long
+    ): List<Long> =
         modeMask
             // Need to flip it round as the mask index reads RtoL
             .asReversed()
@@ -116,23 +116,22 @@ class IntCodeComputer(inputs: List<Int> = emptyList()) {
                 }
             }
 
-
-    fun executeProgram(inputProgram: List<Int>): List<Int> {
-        load(inputProgram)
+    fun executeProgram(inputProgram: List<Number>): List<Long> {
+        loadIntoMemory(inputProgram)
         return resume()
     }
 
-    fun load(inputProgram: List<Int>) {
-        inputProgram.mapIndexed { index, i -> memory.put(index, i) }
+    internal fun loadIntoMemory(inputProgram: List<Number>) {
+        inputProgram.mapIndexed { index, i -> memory.put(index.toLong(), i.toLong()) }
         address = 0
     }
 
-    fun resume(): List<Int> {
+    fun resume(): List<Long> {
         while (true) {
             if (memory[address] == haltOp) {
                 break
             }
-            val opcode = memory[address]!! % 100
+            val opcode = (memory[address]!! % 100).toInt()
 
             val modeMask = (memory[address]!! / 100)
                 .toString()
@@ -145,7 +144,10 @@ class IntCodeComputer(inputs: List<Int> = emptyList()) {
                     (ops[opcode] ?: error("Opcode $opcode not supported")).invoke(
                         OpCodeParams(
                             memory,
-                            AddressAndRelativeBase(address, relativeMemoryBase),
+                            AddressAndRelativeBase(
+                                address,
+                                relativeMemoryBase
+                            ),
                             paramAddresses
                         )
                     )
@@ -158,30 +160,30 @@ class IntCodeComputer(inputs: List<Int> = emptyList()) {
         return memory.values.toList()
     }
 
-    fun getInputProgram(resourceName: String): List<Int> {
+    fun getInputProgram(resourceName: String): List<Long> {
         return this::class
             .java
             .getResourceAsStream(resourceName)
             .bufferedReader()
             .use { it.readText() }
             .split(",")
-            .map { it.trim().toInt() }
+            .map { it.trim().toLong() }
     }
 
-    fun executeNamedResourceProgram(resourceName: String): List<Int> {
+    fun executeNamedResourceProgram(resourceName: String): List<Number> {
         return executeProgram(getInputProgram(resourceName))
     }
 
-    fun outputs(): List<Int> = outputs
-    fun addInput(i: Int) {
+    fun outputs(): List<Number> = outputs
+    fun addInput(i: Number) {
         inputQueue.add(i)
     }
 
-    data class AddressAndRelativeBase(val address: Int, val relativeMemoryBase: Int)
+    data class AddressAndRelativeBase(val address: Long, val relativeMemoryBase: Long)
     data class OpCodeParams(
-        val memory: MutableMap<Int, Int>,
+        val memory: MutableMap<Long, Long>,
         val addressAndRelativeBase: AddressAndRelativeBase,
-        val paramAddresses: List<Int>
+        val paramAddresses: List<Long>
     )
 
 }

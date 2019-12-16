@@ -6,8 +6,9 @@ fun main() {
 }
 
 class Day5 {
-    fun executeProgram(input: Int): List<Int> {
-        val intCodeComputer = IntCodeComputer(listOf(input))
+    fun executeProgram(input: Number): List<Number> {
+        val intCodeComputer =
+            IntCodeComputer(listOf(input))
         intCodeComputer.executeNamedResourceProgram("/day5.input.txt")
         return intCodeComputer.outputs()
     }

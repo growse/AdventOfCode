@@ -1,4 +1,5 @@
-import com.growse.adventofcode.Day8
+package com.growse.adventofcode
+
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -26,7 +27,8 @@ class TestDay8 {
     @Test
     fun flattenImage() {
         val inputImageData = "0222112222120000"
-        val image = Day8().decodeImage(inputImageData.toCharArray().map { it.toString().toInt() }, 2, 2)
+        val image = Day8()
+            .decodeImage(inputImageData.toCharArray().map { it.toString().toInt() }, 2, 2)
         assertEquals(4, image.layers.size)
         val flattened = image.flatten()
         assertEquals(listOf(0,1,1,0),flattened)

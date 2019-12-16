@@ -36,10 +36,22 @@ class Day3 {
                 it[0].toString().repeat(it.substring(1).toInt()).asIterable()
             }.map {
                 val new = when (it) {
-                    'R' -> Coordinate(pos.x + 1, pos.y)
-                    'L' -> Coordinate(pos.x - 1, pos.y)
-                    'U' -> Coordinate(pos.x, pos.y + 1)
-                    'D' -> Coordinate(pos.x, pos.y - 1)
+                    'R' -> Coordinate(
+                        pos.x + 1,
+                        pos.y
+                    )
+                    'L' -> Coordinate(
+                        pos.x - 1,
+                        pos.y
+                    )
+                    'U' -> Coordinate(
+                        pos.x,
+                        pos.y + 1
+                    )
+                    'D' -> Coordinate(
+                        pos.x,
+                        pos.y - 1
+                    )
                     else -> pos
                 }
                 pos = new

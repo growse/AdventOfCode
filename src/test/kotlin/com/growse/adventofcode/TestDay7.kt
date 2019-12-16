@@ -1,4 +1,5 @@
-import com.growse.adventofcode.Day7
+package com.growse.adventofcode
+
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -35,7 +36,7 @@ class TestDay7 {
     )
     fun maxThrustFinder(program: String, expectedMaxThrust: String) {
         val maxThrust = Day7().findMaxThrust(program.split(",").map { it.toInt() })
-        assertEquals(expectedMaxThrust.toInt(), maxThrust)
+        assertEquals(expectedMaxThrust.toLong(), maxThrust)
     }
 
     @ParameterizedTest
@@ -51,7 +52,7 @@ class TestDay7 {
                 program.split(",").map { it.toInt() },
                 phaseSettings.split(",").map { it.toInt() }
             )
-        assertEquals(expectedThrust.toInt(), thrust)
+        assertEquals(expectedThrust.toLong(), thrust)
     }
 
     @ParameterizedTest
@@ -62,7 +63,7 @@ class TestDay7 {
     )
     fun maxThrustFinderWithFeedbackLoop(program: String, expectedMaxThrust: String) {
         val maxThrust = Day7().findMaxThrustWithFeedback(program.split(",").map { it.toInt() })
-        assertEquals(expectedMaxThrust.toInt(), maxThrust)
+        assertEquals(expectedMaxThrust.toLong(), maxThrust)
     }
 
     @ParameterizedTest
@@ -78,6 +79,6 @@ class TestDay7 {
                 program.split(",").map { it.toInt() },
                 phaseSettings.split(",").map { it.toInt() }
             )
-        assertEquals(expectedThrust.toInt(), thrust)
+        assertEquals(expectedThrust.toLong(), thrust)
     }
 }

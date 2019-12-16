@@ -1,4 +1,5 @@
-import com.growse.adventofcode.Day4
+package com.growse.adventofcode
+
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.params.ParameterizedTest

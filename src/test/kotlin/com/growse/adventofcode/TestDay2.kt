@@ -16,7 +16,9 @@ class TestDay2 {
     )
     fun testIntCodeComputerWorks(inputProgram: String, expectedOutputProgram: String) {
 
-        val intCodeComputerOutput = IntCodeComputer(listOf(4))
+        val intCodeComputerOutput = IntCodeComputer(
+            listOf(4)
+        )
             .executeProgram(
                 inputProgram.split(",").map { a -> a.toInt() }
             )
