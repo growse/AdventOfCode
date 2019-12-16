@@ -1,6 +1,5 @@
 package com.growse.adventofcode
 
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -21,7 +20,7 @@ class TestDay2 {
             .executeProgram(
                 inputProgram.split(",").map { a -> a.toInt() }
             )
-        Assertions.assertEquals(
+        assertEquals(
             expectedOutputProgram,
             intCodeComputerOutput.joinToString(",")
         )

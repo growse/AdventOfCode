@@ -4,105 +4,158 @@ import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 
 class WaitForInputInterrupt : Throwable()
-class IntCodeComputer(inputs: List<Int>) {
+class IntCodeComputer(inputs: List<Int> = emptyList()) {
+    private var relativeMemoryBase: Int = 0
     private var inputQueue: Queue<Int> = ArrayBlockingQueue(10)
+    private val outputs = mutableListOf<Int>()
+    private var address = 0
+    private val memory: MutableMap<Int, Int> = mutableMapOf()
 
     init {
         inputQueue.addAll(inputs)
     }
 
-    private val outputs = mutableListOf<Int>()
-    private fun paramAddressesWithBitMask(memory: List<Int>, address: Int, modeMask: BitSet): List<Int> {
-        return when (memory.size - 1 - address) {
-            0 -> error("At memory's end")
-            1 -> listOf(
-                if (modeMask[0]) address + 1 else memory[address + 1]
-            )
-            2 -> listOf(
-                if (modeMask[0]) address + 1 else memory[address + 1],
-                if (modeMask[1]) address + 2 else memory[address + 2]
-            )
-            else -> listOf(
-                if (modeMask[0]) address + 1 else memory[address + 1],
-                if (modeMask[1]) address + 2 else memory[address + 2],
-                if (modeMask[2]) address + 3 else memory[address + 3]
-            )
-        }
-    }
-
     private val haltOp = 99
     private val ops = mapOf(
-        Pair(1, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
-            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
-            memory[paramAddresses[2]] = memory[paramAddresses[0]] + memory[paramAddresses[1]]
-            return 4
+        Pair(1, fun(inputs: OpCodeParams): AddressAndRelativeBase {
+            inputs.memory[inputs.paramAddresses[2]] =
+                inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 } + inputs.memory.computeIfAbsent(inputs.paramAddresses[1]) { 0 }
+            return AddressAndRelativeBase(
+                inputs.addressAndRelativeBase.address + 4,
+                inputs.addressAndRelativeBase.relativeMemoryBase
+            )
         }),
-        Pair(2, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
-            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
-            memory[paramAddresses[2]] = memory[paramAddresses[0]] * memory[paramAddresses[1]]
-            return 4
+        Pair(2, fun(inputs: OpCodeParams): AddressAndRelativeBase {
+            inputs.memory[inputs.paramAddresses[2]] =
+                inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 } * inputs.memory.computeIfAbsent(inputs.paramAddresses[1]) { 0 }
+            return AddressAndRelativeBase(
+                inputs.addressAndRelativeBase.address + 4,
+                inputs.addressAndRelativeBase.relativeMemoryBase
+            )
         }),
-        Pair(3, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
-            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
-            memory[paramAddresses[0]] = inputQueue.remove()
-            return 2
+        Pair(3, fun(inputs: OpCodeParams): AddressAndRelativeBase {
+            inputs.memory[inputs.paramAddresses[0]] = inputQueue.remove()
+            return AddressAndRelativeBase(
+                inputs.addressAndRelativeBase.address + 2,
+                inputs.addressAndRelativeBase.relativeMemoryBase
+            )
         }),
-        Pair(4, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
-            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
-            outputs.add(memory[paramAddresses[0]])
-            return 2
+        Pair(4, fun(inputs: OpCodeParams): AddressAndRelativeBase {
+            outputs.add(inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 })
+            return AddressAndRelativeBase(
+                inputs.addressAndRelativeBase.address + 2,
+                inputs.addressAndRelativeBase.relativeMemoryBase
+            )
         }),
-        Pair(5, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
-            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
-            return if (memory[paramAddresses[0]] != 0) memory[paramAddresses[1]] - address else 3
+        Pair(5, fun(inputs: OpCodeParams): AddressAndRelativeBase {
+            return AddressAndRelativeBase(
+                if (
+                    inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 } != 0
+                )
+                    inputs.memory.computeIfAbsent(inputs.paramAddresses[1]) { 0 }
+                else
+                    inputs.addressAndRelativeBase.address + 3,
+                inputs.addressAndRelativeBase.relativeMemoryBase
+            )
         }),
-        Pair(6, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
-            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
-            return if (memory[paramAddresses[0]] == 0) memory[paramAddresses[1]] - address else 3
+        Pair(6, fun(inputs: OpCodeParams): AddressAndRelativeBase {
+            return AddressAndRelativeBase(
+                if (
+                    inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 } == 0
+                )
+                    inputs.memory.computeIfAbsent(inputs.paramAddresses[1]) { 0 }
+                else
+                    inputs.addressAndRelativeBase.address + 3,
+                inputs.addressAndRelativeBase.relativeMemoryBase
+            )
         }),
-        Pair(7, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
-            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
-            memory[paramAddresses[2]] = if (memory[paramAddresses[0]] < memory[paramAddresses[1]]) 1 else 0
-            return 4
+        Pair(7, fun(inputs: OpCodeParams): AddressAndRelativeBase {
+            inputs.memory[inputs.paramAddresses[2]] =
+                if (
+                    inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 } < inputs.memory.computeIfAbsent(inputs.paramAddresses[1]) { 0 }
+                ) 1 else 0
+            return AddressAndRelativeBase(
+                inputs.addressAndRelativeBase.address + 4,
+                inputs.addressAndRelativeBase.relativeMemoryBase
+            )
         }),
-        Pair(8, fun(memory: MutableList<Int>, address: Int, modeMask: BitSet): Int {
-            val paramAddresses = paramAddressesWithBitMask(memory, address, modeMask)
-            memory[paramAddresses[2]] = if (memory[paramAddresses[0]] == memory[paramAddresses[1]]) 1 else 0
-            return 4
+        Pair(8, fun(inputs: OpCodeParams): AddressAndRelativeBase {
+            inputs.memory[inputs.paramAddresses[2]] =
+                if (
+                    inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 } ==
+                    inputs.memory.computeIfAbsent(inputs.paramAddresses[1]) { 0 }
+                ) 1 else 0
+            return AddressAndRelativeBase(
+                inputs.addressAndRelativeBase.address + 4,
+                inputs.addressAndRelativeBase.relativeMemoryBase
+            )
+        }),
+        Pair(9, fun(inputs: OpCodeParams): AddressAndRelativeBase {
+            return AddressAndRelativeBase(
+                inputs.addressAndRelativeBase.address + 2,
+                inputs.memory.computeIfAbsent(inputs.paramAddresses[0]) { 0 }
+            )
         })
     )
-    private var address = 0
-    private lateinit var memory: MutableList<Int>
+
+    private fun paramAddressesFromMask(
+        memory: MutableMap<Int, Int>,
+        address: Int,
+        modeMask: List<Int>,
+        relativeMemoryBase: Int
+    ): List<Int> =
+        modeMask
+            // Need to flip it round as the mask index reads RtoL
+            .asReversed()
+            .mapIndexed { index, mode ->
+                when (mode) {
+                    0 -> memory.computeIfAbsent(address + index + 1) { 0 }
+                    1 -> address + index + 1
+                    2 -> memory.computeIfAbsent(address + index + 1) { 0 } + relativeMemoryBase
+                    else -> 0
+                }
+            }
+
+
     fun executeProgram(inputProgram: List<Int>): List<Int> {
         load(inputProgram)
         return resume()
     }
 
     fun load(inputProgram: List<Int>) {
-        memory = inputProgram.toMutableList()
+        inputProgram.mapIndexed { index, i -> memory.put(index, i) }
         address = 0
     }
 
-    fun resume(): MutableList<Int> {
+    fun resume(): List<Int> {
         while (true) {
             if (memory[address] == haltOp) {
                 break
             }
-            val opcode = memory[address] % 100
-            val byteArray = ByteArray(1)
-            byteArray[0] = (memory[address] / 100)
-                .toString()
-                .toInt(2)
-                .toByte()
+            val opcode = memory[address]!! % 100
 
-            val modeMask = BitSet.valueOf(byteArray)
+            val modeMask = (memory[address]!! / 100)
+                .toString()
+                .padStart(3, '0')
+                .map { it.toString().toInt() }
+
             try {
-                address += (ops[opcode] ?: error("Opcode $opcode not supported")).invoke(memory, address, modeMask)
+                val paramAddresses = paramAddressesFromMask(memory, address, modeMask, relativeMemoryBase)
+                val newAddressState =
+                    (ops[opcode] ?: error("Opcode $opcode not supported")).invoke(
+                        OpCodeParams(
+                            memory,
+                            AddressAndRelativeBase(address, relativeMemoryBase),
+                            paramAddresses
+                        )
+                    )
+                address = newAddressState.address
+                relativeMemoryBase = newAddressState.relativeMemoryBase
             } catch (e: NoSuchElementException) {
                 throw WaitForInputInterrupt()
             }
         }
-        return memory
+        return memory.values.toList()
     }
 
     fun getInputProgram(resourceName: String): List<Int> {
@@ -123,6 +176,12 @@ class IntCodeComputer(inputs: List<Int>) {
     fun addInput(i: Int) {
         inputQueue.add(i)
     }
+
+    data class AddressAndRelativeBase(val address: Int, val relativeMemoryBase: Int)
+    data class OpCodeParams(
+        val memory: MutableMap<Int, Int>,
+        val addressAndRelativeBase: AddressAndRelativeBase,
+        val paramAddresses: List<Int>
+    )
+
 }
-
-
