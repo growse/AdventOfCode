@@ -46,35 +46,20 @@ class Day10 {
         if (asteroid == Coordinate(0, 0)) {
             return false
         }
-        if (asteroid.x == 0) {
-            return !asteroids
-                .filter { it != Coordinate(0, 0) }
-                .any {
-                    it.x == 0 && IntRange(
-                        minOf(0, asteroid.y),
-                        maxOf(0, asteroid.y)
-                    ).contains(it.y) && it != asteroid
-                }
-        }
-        if (asteroid.y == 0) {
-            return !asteroids
-                .filter { it != Coordinate(0, 0) }
-                .any {
-                    it.y == 0 && IntRange(
-                        minOf(0, asteroid.x),
-                        maxOf(0, asteroid.x)
-                    ).contains(it.x) && it != asteroid
-                }
-        }
-        // Find all the whole fraction coordinates, and figure out if there's an asteroid there
-        return !IntRange(
-            minOf(0, asteroid.x),
-            maxOf(0, asteroid.x)
-        )
-            .filter { (it * asteroid.y) % asteroid.x == 0 && it != 0 }
-            .map { Coordinate(it, (it * asteroid.y) / asteroid.x) }
-            .filter { it != asteroid }
-            .any { asteroids.contains(it) }
+        return asteroids
+            .filter {
+                it != Coordinate(0, 0) && it.distanceFrom(Coordinate(0, 0)) <= asteroid.distanceFrom(
+                    Coordinate(
+                        0,
+                        0
+                    )
+                )
+            }
+            .groupBy { atan2(it.x.toDouble(), it.y.toDouble()) }
+            .filterValues { it.contains(asteroid) }
+            .values
+            .first()
+            .size == 1
     }
 
     fun loadGridFromResource(resourceName: String): String {
