@@ -289,4 +289,44 @@ class TestDay10 {
         assertEquals(expectedBestStation, bestMonitoringStation.first)
         assertEquals(expectedVisibleAsteroids, bestMonitoringStation.second)
     }
+
+    @Test
+    fun laserSweeperOrder() {
+        val inputGrid = """
+                .#..##.###...#######
+                ##.############..##.
+                .#.######.########.#
+                .###.#######.####.#.
+                #####.##.#.##.###.##
+                ..#####..#.#########
+                ####################
+                #.####....###.#.#.##
+                ##.#################
+                #####.##.###..####..
+                ..######..##.#######
+                ####.##.####...##..#
+                .#####..#.######.###
+                ##...#.##########...
+                #.##########.#######
+                .####.#.###.###.#.##
+                ....##.##.###..#####
+                .#.#.###########.###
+                #.#.#.#####.####.###
+                ###.##.####.##.#..##
+            """.trimIndent()
+        val laserBase = Coordinate(11, 13)
+        val laserSweepDestroyOrder = Day10().laserSweepAsteroidDestroyOrder(inputGrid, laserBase)
+        assertEquals(Coordinate(11, 12), laserSweepDestroyOrder[0])
+        assertEquals(Coordinate(12, 1), laserSweepDestroyOrder[1])
+        assertEquals(Coordinate(12, 2), laserSweepDestroyOrder[2])
+        assertEquals(Coordinate(12, 8), laserSweepDestroyOrder[9])
+        assertEquals(Coordinate(16, 0), laserSweepDestroyOrder[19])
+        assertEquals(Coordinate(16, 9), laserSweepDestroyOrder[49])
+        assertEquals(Coordinate(10, 16), laserSweepDestroyOrder[99])
+        assertEquals(Coordinate(9, 6), laserSweepDestroyOrder[198])
+        assertEquals(Coordinate(8, 2), laserSweepDestroyOrder[199])
+        assertEquals(Coordinate(10, 9), laserSweepDestroyOrder[200])
+        assertEquals(Coordinate(11, 1), laserSweepDestroyOrder[298])
+        assertEquals(299, laserSweepDestroyOrder.size)
+    }
 }

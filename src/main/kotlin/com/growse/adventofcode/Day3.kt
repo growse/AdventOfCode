@@ -7,7 +7,7 @@ fun main() {
     println(Day3().getMinPathDistanceFromInput())
 }
 
-data class Coordinate(val x: Int, val y: Int)
+
 
 class Day3 {
     fun getMinDistanceFromInput(): String {

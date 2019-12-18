@@ -1,7 +1,17 @@
 package com.growse.adventofcode
 
+import kotlin.math.PI
+import kotlin.math.atan2
+
 fun main() {
-    println(Day10().findBestMonitoringStationLocation(Day10().loadGridFromResource("/day10.input.txt")))
+    val monitoringStation = Day10().findBestMonitoringStationLocation(Day10().loadGridFromResource("/day10.input.txt"))
+    println(monitoringStation)
+    println(
+        Day10().laserSweepAsteroidDestroyOrder(
+            Day10().loadGridFromResource("/day10.input.txt"),
+            monitoringStation.first
+        )[199]
+    )
 }
 
 class Day10 {
@@ -18,7 +28,7 @@ class Day10 {
         return Grid(width, height, asteroids)
     }
 
-    fun findBestMonitoringStationLocation(input: String): Pair<Coordinate,Int> {
+    fun findBestMonitoringStationLocation(input: String): Pair<Coordinate, Int> {
         val grid = stringToGrid(input)
         return grid
             .asteroids
@@ -74,6 +84,32 @@ class Day10 {
             .use { it.readText() }
     }
 
+    fun laserSweepAsteroidDestroyOrder(inputGrid: String, laserBase: Coordinate): List<Coordinate> =
+        stringToGrid(inputGrid)
+            .asteroids
+            .filter { it != laserBase }
+            // calculate angle as clockwise from straight up, convert to degrees
+            .groupBy {
+                ((2 * PI) - (atan2(
+                    it.x.toDouble() - laserBase.x,
+                    it.y.toDouble() - laserBase.y
+                ) + PI)) * (360 / (2 * PI))
+            }
+            .mapValues { it.value.sortedBy { coordinate -> coordinate.distanceFrom(laserBase) } }
+            .flatMap {
+                it.value.mapIndexed { index, coordinate ->
+                    LaserImpactAngle(
+                        coordinate,
+                        it.key + (360 * index)
+                    )
+                }
+            }
+            .sortedBy { it.angle }
+            .groupBy { it.angle }
+            .values
+            .map { it.first().coordinate }
+
+    data class LaserImpactAngle(val coordinate: Coordinate, val angle: Double)
 
     data class Grid(val width: Int, val height: Int, val asteroids: List<Coordinate>)
 }
