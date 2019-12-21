@@ -5,6 +5,12 @@ fun main() {
     emergencyHullPaintingRobot.loadProgramFromResource("/day11.input.txt")
     emergencyHullPaintingRobot.runToCompletion()
     println(emergencyHullPaintingRobot.getNumberOfUniquePanelsPainted())
+
+    val emergencyHullPaintingRobotPt2 = EmergencyHullPaintingRobot()
+    emergencyHullPaintingRobotPt2.loadProgramFromResource("/day11.input.txt")
+    emergencyHullPaintingRobotPt2.setInitialStartingLocationColour(PaintColour.WHITE)
+    emergencyHullPaintingRobotPt2.runToCompletion()
+    emergencyHullPaintingRobotPt2.renderResult()
 }
 
 enum class Direction {
@@ -30,7 +36,6 @@ class EmergencyHullPaintingRobot {
     }
 
     fun paintAndMove(colourAndDirection: ColourAndDirection) {
-        println("Painting $currentLocation ${colourAndDirection.colour}. Turning to face ${colourAndDirection.direction}")
         paintedPanels.add(Pair(currentLocation, colourAndDirection.colour))
         this.facingDirection = colourAndDirection.direction
         this.currentLocation = when (colourAndDirection.direction) {
@@ -39,7 +44,6 @@ class EmergencyHullPaintingRobot {
             Direction.SOUTH -> Coordinate(currentLocation.x, currentLocation.y - 1)
             Direction.WEST -> Coordinate(currentLocation.x - 1, currentLocation.y)
         }
-        println("robot now at $currentLocation")
     }
 
     fun getNumberOfUniquePanelsPainted(): Int =
@@ -57,7 +61,6 @@ class EmergencyHullPaintingRobot {
         } catch (e: WaitForInputInterrupt) {
 
         }
-        println("Computer outputs colour and direction: ${intCodeComputer.outputs().takeLast(2)}")
         return ColourAndDirection(
             if (intCodeComputer.outputs().dropLast(1).last().toInt() == 1) PaintColour.WHITE else PaintColour.BLACK,
             getNewDirection(this.facingDirection, intCodeComputer.outputs().last().toInt())
@@ -77,6 +80,28 @@ class EmergencyHullPaintingRobot {
     fun runToCompletion() {
         while (!programComplete) {
             paintAndMove(getProgramOutput())
+        }
+    }
+
+    fun setInitialStartingLocationColour(colour: PaintColour) {
+        paintedPanels.add(Pair(Coordinate(0, 0), colour))
+    }
+
+    fun renderResult() {
+        val topLeft =
+            Coordinate(paintedPanels.minBy { it.first.x }!!.first.x, paintedPanels.maxBy { it.first.y }!!.first.y)
+        val bottomRight =
+            Coordinate(paintedPanels.maxBy { it.first.x }!!.first.x, paintedPanels.minBy { it.first.y }!!.first.y)
+        println("$topLeft $bottomRight")
+        (topLeft.y downTo bottomRight.y).forEach { row ->
+            println((topLeft.x..bottomRight.x).map { col ->
+                paintedPanels.lastOrNull {
+                    it.first == Coordinate(
+                        col,
+                        row
+                    )
+                }?.second ?: PaintColour.BLACK
+            }.joinToString { if (it == PaintColour.WHITE) "#" else "." })
         }
     }
 }
