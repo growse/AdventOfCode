@@ -15,14 +15,14 @@ class TestDay12 {
         fun planetsStepCases(): Stream<Arguments> =
             of(
                 Arguments.of(
-                    setOf(
+                    listOf(
                         Planet(Position(-1, 0, 2)),
                         Planet(Position(2, -10, -7)),
                         Planet(Position(4, -8, 8)),
                         Planet(Position(3, 5, -1))
                     ),
                     1,
-                    setOf(
+                    listOf(
                         Planet(Position(2, -1, 1), Velocity(3, -1, -1)),
                         Planet(Position(3, -7, -4), Velocity(1, 3, 3)),
                         Planet(Position(1, -7, 5), Velocity(-3, 1, -3)),
@@ -31,14 +31,14 @@ class TestDay12 {
                     229
                 ),
                 Arguments.of(
-                    setOf(
+                    listOf(
                         Planet(Position(-1, 0, 2)),
                         Planet(Position(2, -10, -7)),
                         Planet(Position(4, -8, 8)),
                         Planet(Position(3, 5, -1))
                     ),
                     2,
-                    setOf(
+                    listOf(
                         Planet(Position(5, -3, -1), Velocity(3, -2, -2)),
                         Planet(Position(1, -2, 2), Velocity(-2, 5, 6)),
                         Planet(Position(1, -4, -1), Velocity(0, 3, -6)),
@@ -47,14 +47,14 @@ class TestDay12 {
                     245
                 ),
                 Arguments.of(
-                    setOf(
+                    listOf(
                         Planet(Position(-1, 0, 2)),
                         Planet(Position(2, -10, -7)),
                         Planet(Position(4, -8, 8)),
                         Planet(Position(3, 5, -1))
                     ),
                     10,
-                    setOf(
+                    listOf(
                         Planet(Position(2, 1, -3), Velocity(-3, -2, 1)),
                         Planet(Position(1, -8, 0), Velocity(-1, 1, 3)),
                         Planet(Position(3, -6, 1), Velocity(3, 2, -3)),
@@ -63,13 +63,13 @@ class TestDay12 {
                     179
                 ),
                 Arguments.of(
-                    setOf(
+                    listOf(
                         Planet(Position(x = -8, y = -10, z = 0)),
                         Planet(Position(x = 5, y = 5, z = 10)),
                         Planet(Position(x = 2, y = -7, z = 3)),
                         Planet(Position(x = 9, y = -8, z = -3))
                     ), 100,
-                    setOf(
+                    listOf(
                         Planet(Position(x = 8, y = -12, z = -9), Velocity(x = -7, y = 3, z = 0)),
                         Planet(Position(x = 13, y = 16, z = -3), Velocity(x = 3, y = -11, z = -5)),
                         Planet(Position(x = -29, y = -11, z = -1), Velocity(x = -3, y = 7, z = 4)),
@@ -83,7 +83,7 @@ class TestDay12 {
 
     @ParameterizedTest
     @MethodSource("planetsStepCases")
-    fun gravitySteps(startingPlanets: Set<Planet>, steps: Int, expectedPlanets: Set<Planet>, expectedEnergy: Int) {
+    fun gravitySteps(startingPlanets: List<Planet>, steps: Int, expectedPlanets: List<Planet>, expectedEnergy: Int) {
         val resultingPlanets = (0 until steps).fold(startingPlanets, { acc, _ -> Day12().stepPlanets(acc) })
         assertEquals(
             expectedPlanets, resultingPlanets
@@ -93,9 +93,9 @@ class TestDay12 {
     @ParameterizedTest
     @MethodSource("planetsStepCases")
     fun gravityStepsEnergy(
-        startingPlanets: Set<Planet>,
+        startingPlanets: List<Planet>,
         steps: Int,
-        expectedPlanets: Set<Planet>,
+        expectedPlanets: List<Planet>,
         expectedEnergy: Int
     ) {
         val resultingPlanets = (0 until steps).fold(startingPlanets, { acc, _ -> Day12().stepPlanets(acc) })
@@ -116,4 +116,27 @@ class TestDay12 {
         assertEquals(36, Planet(Position(2, 1, 3), Velocity(-3, -2, 1)).energy())
     }
 
+    @Test
+    fun findRepeated() {
+        val planets = listOf(
+            Planet(Position(-1, 0, 2)),
+            Planet(Position(2, -10, -7)),
+            Planet(Position(4, -8, 8)),
+            Planet(Position(3, 5, -1))
+        )
+        val statesUntilRepeated = Day12().statesUntilRepeated(planets)
+        assertEquals(2772L, statesUntilRepeated)
+    }
+
+    @Test
+    fun findLargeRepeated() {
+        val planets = listOf(
+            Planet(Position(-8, -10, 0)),
+            Planet(Position(5, 5, 10)),
+            Planet(Position(2, -7, 3)),
+            Planet(Position(9, -8, -3))
+        )
+        val statesUntilRepeated = Day12().statesUntilRepeated(planets)
+        assertEquals(4686774924, statesUntilRepeated)
+    }
 }

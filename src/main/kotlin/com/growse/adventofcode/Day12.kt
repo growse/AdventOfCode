@@ -3,7 +3,7 @@ package com.growse.adventofcode
 import kotlin.math.abs
 
 fun main() {
-    val planets = setOf(
+    val planets = listOf(
         Planet(Position(7, 10, 17)),
         Planet(Position(-2, 7, 0)),
         Planet(Position(12, 5, 12)),
@@ -15,6 +15,8 @@ fun main() {
             .map { it.energy() }
             .sum()
     )
+
+    println(Day12().statesUntilRepeated(planets))
 }
 
 data class Position(val x: Int, val y: Int, val z: Int) {
@@ -34,7 +36,7 @@ data class Planet(
 }
 
 class Day12 {
-    fun stepPlanets(planets: Set<Planet>): Set<Planet> =
+    fun stepPlanets(planets: List<Planet>): List<Planet> =
         planets
             .flatMap { p -> planets.filter { it != p }.map { p to it } }
             .asSequence()
@@ -76,8 +78,52 @@ class Day12 {
             .map {
                 applyVelocity(it)
             }
-            .toSet()
 
+
+    fun statesUntilRepeated(planets: List<Planet>): Long {
+        val xseen = mutableSetOf<List<Pair<Int, Int>>>()
+        val yseen = mutableSetOf<List<Pair<Int, Int>>>()
+        val zseen = mutableSetOf<List<Pair<Int, Int>>>()
+        val seen = mutableSetOf<List<Planet>>()
+        var currentPlanets = planets
+        var counter = 0L
+        var xCounter = 0L
+        var yCounter = 0L
+        var zCounter = 0L
+        while (true) {
+            currentPlanets = stepPlanets(currentPlanets)
+//            if (counter % 44 == 0L) {
+//                println("$counter - ${currentPlanets.map { it.position.z to it.velocity.z }}")
+//            }
+            if (xCounter == 0L && !xseen.add(currentPlanets.map { it.position.x to it.velocity.x })) {
+                xCounter = counter
+                println("X: $xCounter")
+            }
+            if (yCounter == 0L && !yseen.add(currentPlanets.map { it.position.y to it.velocity.y })) {
+                yCounter = counter
+                println("Y: $yCounter")
+            }
+            if (zCounter == 0L && !zseen.add(currentPlanets.map { it.position.z to it.velocity.z })) {
+                zCounter = counter
+                println("Z: $zCounter")
+            }
+//            if (!seen.add(currentPlanets)) {
+//                break
+//            }
+            if (xCounter != 0L && yCounter != 0L && zCounter != 0L) {
+                break
+            }
+            counter++
+        }
+        return listOf(xCounter, yCounter, zCounter).reduce { acc, i -> if (acc == 0L) i else lcm(acc, i) }
+//        return counter
+    }
+
+    private fun lcm(i1: Long, i2: Long): Long = (i1 * i2) / gcd(i1, i2)
+
+    private fun gcd(i1: Long, i2: Long): Long {
+        return if (i2 != 0L) gcd(i2, i1 % i2) else i1
+    }
 
     fun applyVelocity(planet: Planet): Planet =
         Planet(planet.position + planet.velocity, planet.velocity)
