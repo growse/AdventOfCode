@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    implementation("com.googlecode.lanterna:lanterna:3.0.1")
     testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
 }
 
