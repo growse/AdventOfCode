@@ -84,7 +84,6 @@ class Day12 {
         val xseen = mutableSetOf<List<Pair<Int, Int>>>()
         val yseen = mutableSetOf<List<Pair<Int, Int>>>()
         val zseen = mutableSetOf<List<Pair<Int, Int>>>()
-        val seen = mutableSetOf<List<Planet>>()
         var currentPlanets = planets
         var counter = 0L
         var xCounter = 0L
@@ -92,9 +91,6 @@ class Day12 {
         var zCounter = 0L
         while (true) {
             currentPlanets = stepPlanets(currentPlanets)
-//            if (counter % 44 == 0L) {
-//                println("$counter - ${currentPlanets.map { it.position.z to it.velocity.z }}")
-//            }
             if (xCounter == 0L && !xseen.add(currentPlanets.map { it.position.x to it.velocity.x })) {
                 xCounter = counter
                 println("X: $xCounter")
@@ -107,16 +103,12 @@ class Day12 {
                 zCounter = counter
                 println("Z: $zCounter")
             }
-//            if (!seen.add(currentPlanets)) {
-//                break
-//            }
             if (xCounter != 0L && yCounter != 0L && zCounter != 0L) {
                 break
             }
             counter++
         }
         return listOf(xCounter, yCounter, zCounter).reduce { acc, i -> if (acc == 0L) i else lcm(acc, i) }
-//        return counter
     }
 
     private fun lcm(i1: Long, i2: Long): Long = (i1 * i2) / gcd(i1, i2)
